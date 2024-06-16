@@ -1,52 +1,56 @@
 package com.huawei.ibooking.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huawei.ibooking.business.StudentBusiness;
+import com.huawei.ibooking.validator.UpdateAction;
+import com.huawei.ibooking.model.MyResponseBody;
 import com.huawei.ibooking.model.StudentDO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.repository.query.Param;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import javax.validation.groups.Default;
 
 @RestController
+@Validated
 public class StudentController {
     @Autowired
     private StudentBusiness stuBiz;
 
+    /**
+     * 根据学号，姓名，失信次数筛选学生，参数可为null
+     *
+     * @param stuNum
+     * @param name
+     * @param credit
+     * @return
+     */
     @GetMapping(value = "/student")
-    public ResponseEntity<List<StudentDO>> list() {
-        final List<StudentDO> students = stuBiz.getStudents();
-
-        return new ResponseEntity<>(students, HttpStatus.OK);
-    }
-
-    @GetMapping(value = "/student/{stuNum}")
-    public ResponseEntity<StudentDO> query(@PathVariable("stuNum") String stuNum) {
-        Optional<StudentDO> stu = stuBiz.getStudent(stuNum);
-
-        return stu.map(studentDO -> new ResponseEntity<>(studentDO, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+    public MyResponseBody list(@Param("stuNum") String stuNum,
+                               @Param("name") String name,
+                               @Param("credit") Integer credit,
+                               @Param("page") Integer page,
+                               @Param("size") Integer rows) {
+        IPage<StudentDO> students = stuBiz.getStudents(stuNum, name, credit, page, rows);
+        return new MyResponseBody("200", "success", students);
     }
 
     @PostMapping(value = "/student")
-    public ResponseEntity<Void> add(@RequestBody StudentDO student) {
-        boolean result = stuBiz.saveStudent(student);
-
-        return new ResponseEntity<>(result ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    public MyResponseBody add(@Validated @RequestBody StudentDO student) {
+        boolean result = stuBiz.save(student);
+        return new MyResponseBody(result ? "200" : "400", result ? "success" : "failed", result);
     }
 
     @PutMapping(value = "/student")
-    public ResponseEntity<Void> save(@RequestBody StudentDO student) {
-        boolean result = stuBiz.saveStudent(student);
-
-        return new ResponseEntity<>(result ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    public MyResponseBody save(@RequestBody @Validated({UpdateAction.class, Default.class}) StudentDO student) {
+        boolean result = stuBiz.updateById(student);
+        return new MyResponseBody(result ? "200" : "400", result ? "success" : "failed", result);
     }
 
-    @RequestMapping(value = "/student/{stuNum}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> delete(@PathVariable("stuNum") String stuNum) {
-        boolean result = stuBiz.deleteStudent(stuNum);
-        return new ResponseEntity<>(result ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    @DeleteMapping(value = "/student")
+    public MyResponseBody delete(@RequestBody @Validated({UpdateAction.class, Default.class}) StudentDO student) {
+        boolean result = stuBiz.removeById(student.getId());
+        return new MyResponseBody(result ? "200" : "400", result ? "success" : "failed", result);
     }
 }

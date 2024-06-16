@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.huawei.ibooking.mapper.BookingMapper">
+    <resultMap id="Booking" type="com.huawei.ibooking.model.BookingDo"/>
+
+    <resultMap id="Seat" type="com.huawei.ibooking.model.SeatDo"/>
+
+    <resultMap id="StudyRoom" type="com.huawei.ibooking.model.StudyRoomDO"/>
+
+
+    <resultMap id="Student" type="com.huawei.ibooking.model.StudentDO"/>
+
+
+    <select id="listAllBooks" resultMap="Booking">
+        select id, seatId, stuId, start, end, sign, state
+        from tbl_booking
+    </select>
+
+
+    <insert id="saveBookingInfo" parameterType="com.huawei.ibooking.model.BookingDo">
+        insert into tbl_booking (id, seatId, stuId, start, end, sign, state)
+        values (#{booking.id}, #{booking.seatId}, #{booking.stuId}, #{booking.start}, #{booking.end}, #{booking.sign},
+                #{booking.state})
+    </insert>
+
+
+    <update id="updateBookingSign" parameterType="com.huawei.ibooking.model.BookingDo">
+        update tbl_booking
+        set sign= #{booking.sign}
+        where id = #{booking.id}
+          and seatId = #{booking.seatId}
+          and stuId = #{booking.stuId}
+          and start = #{booking.start}
+          and end = #{booking.end}
+          and state = #{booking.state}
+    </update>
+
+    <update id="updateBookingState" parameterType="com.huawei.ibooking.model.BookingDo">
+        update tbl_booking
+        set state= #{booking.state}
+        where id = #{booking.id}
+          and seatId = #{booking.seatId}
+          and stuId = #{booking.stuId}
+          and start = #{booking.start}
+          and end = #{booking.end}
+          and sign = #{booking.sign}
+    </update>
+
+
+    <delete id="deleteBooking" parameterType="com.huawei.ibooking.model.BookingDo">
+        delete
+        from tbl_booking
+        where id = #{booking.id}
+    </delete>
+
+    <select id="getSeats" resultMap="Seat">
+        select id, studyRoomId, num, socket
+        from tbl_seat
+    </select>
+
+    <select id="getStudyRooms" resultMap="StudyRoom">
+        select id, buildingNum, classRoomNum, startTime, endTime
+        from tbl_study_room
+    </select>
+
+
+    <select id="getStudentDos" resultMap="Student">
+        select id, stuNum, name, password, credit, email
+        from tbl_student
+    </select>
+
+</mapper>

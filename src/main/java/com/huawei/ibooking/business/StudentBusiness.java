@@ -1,36 +1,41 @@
 package com.huawei.ibooking.business;
 
-import com.huawei.ibooking.dao.StudentDao;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.huawei.ibooking.mapper.StudentMapper;
 import com.huawei.ibooking.model.StudentDO;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import com.huawei.ibooking.service.StudentService;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+@Service
+public class StudentBusiness extends ServiceImpl<StudentMapper, StudentDO> implements StudentService {
 
-@Component
-public class StudentBusiness {
-    @Autowired
-    private StudentDao studentDao;
-
-    public List<StudentDO> getStudents() {
-        return studentDao.getStudents();
+    public IPage<StudentDO> getStudents(String stuNum, String name, Integer credit,
+                                        Integer pageNo, Integer size) {
+        QueryWrapper<StudentDO> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(StringUtils.isNotBlank(stuNum), "stuNum", stuNum)
+                .eq(StringUtils.isNotBlank(name), "name", name)
+                .eq(credit != null, "credit", credit);
+        Page<StudentDO> page = new Page<>(pageNo == null? 1 : pageNo,
+                size == null ? this.count(queryWrapper) : size);
+        return this.page(page, queryWrapper);
     }
 
-    public Optional<StudentDO> getStudent(final String stuNum) {
-        List<StudentDO> students = studentDao.getStudent(stuNum);
-        if (students.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return Optional.ofNullable(students.get(0));
-    }
-
-    public boolean saveStudent(final StudentDO stu) {
-        return studentDao.saveStudent(stu);
-    }
-
-    public boolean deleteStudent(final String stuNum) {
-        return studentDao.deleteStudent(stuNum);
+    /**
+     * 验证学生密码是否正确
+     *
+     * @param stu
+     * @return
+     */
+    public StudentDO validateStudent(StudentDO stu) {
+        QueryWrapper<StudentDO> studentDOQueryWrapper = new QueryWrapper<>();
+        studentDOQueryWrapper.eq("stuNum", stu.getStuNum());
+        StudentDO res = this.getOne(studentDOQueryWrapper);
+        if (res != null && res.getPassword().equals(stu.getPassword()))
+            return res;
+        return null;
     }
 }

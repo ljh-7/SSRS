@@ -1,30 +1,40 @@
 server:
-  port: 8090
+  port: 8000
 
 spring:
-  mvc:
-    view:
-      prefix: /views/
-      suffix: .html
-        
   datasource:
     name: ibookingdb
-    url: jdbc:h2:mem:ibookingdb
-    username: sa
-    password: test123
+    url: jdbc:mysql://localhost:3306/ibooking?useSSL=false&serverTimezone=UTC
+    username: root
+    password: root
     type: com.alibaba.druid.pool.DruidDataSource
-    driver-class-name: org.h2.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
 
   sql:
     init:
       schema-locations: classpath:schema.sql
       data-locations: classpath:data.sql
-      mode: always
+      mode: never
 
-mybatis:
-  mapper-locations: classpath:com.huawei.ibooking.mapper/*.xml
-  type-aliases-package: com.huawei.ibooking.model
+  thymeleaf:
+    cache: false
+
+  mvc:
+    static-path-pattern: /**
 
 logging:
   level:
     com.huawei.ibooking: debug
+
+
+mybatis-plus:
+  mapper-locations: classpath:com.huawei.ibooking.mapper/*.xml
+  type-aliases-package: com.huawei.ibooking.model
+  configuration:
+    map-underscore-to-camel-case: false
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      id-type: auto
+
